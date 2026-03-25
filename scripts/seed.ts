@@ -4,7 +4,9 @@
  *
  * Requires DATABASE_URL to be set (e.g. in .env.local).
  */
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+config(); // fallback to .env
 import { readFileSync } from "fs";
 import { join } from "path";
 import { Pool } from "pg";
