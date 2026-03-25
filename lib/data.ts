@@ -280,6 +280,213 @@ The CRM angle: over time, you build a history of who follows through and who doe
     estimatedDuration: "3-4 months",
     tags: ["AI", "Meetings", "Productivity", "CRM"],
   },
+  {
+    id: "9",
+    title: "Open-Source Notion Alternative for Developers",
+    description:
+      "A local-first, markdown-native knowledge base that syncs via Git. No vendor lock-in, plain files, fully customizable.",
+    longDescription: `Notion is great but has major pain points for developers: it's slow, has no offline mode, stores your data in a proprietary format, and is getting expensive.
+
+This project would be:
+- Local-first: all data stored as Markdown + YAML frontmatter
+- Git-synced: your notes repo is just a Git repo — push/pull anywhere
+- VS Code-compatible: open your notes folder in any editor
+- Rich web UI: a beautiful Next.js app for browsing and editing
+- Plugin system: extend with custom blocks (code playgrounds, diagrams, etc.)
+
+The target user is the developer who is tired of Notion but doesn't want to go back to raw Markdown files in Obsidian with no collaboration features.`,
+    category: "Developer Tools",
+    difficulty: "hard",
+    status: "open",
+    votes: 312,
+    comments: 89,
+    bounty: 800,
+    submittedBy: "oss_advocate",
+    submittedAt: "2024-02-18",
+    marketSize: "$2.3B (Productivity & Notes)",
+    techStack: ["Next.js", "TypeScript", "Git", "SQLite", "Electron"],
+    estimatedDuration: "6-12 months",
+    tags: ["Open Source", "Notion", "Developer", "Notes", "Local-first"],
+  },
+  {
+    id: "10",
+    title: "Smart Habit Tracker with Behavioral Science Engine",
+    description:
+      "A habit tracking app backed by behavioral science — uses implementation intentions, temptation bundling, and commitment devices automatically.",
+    longDescription: `Most habit trackers are just streak counters. This one would implement proven behavioral science techniques automatically, based on your habit type and failure patterns.
+
+Core techniques implemented:
+- Implementation intentions: "When X happens, I will do Y" — auto-suggested by the app
+- Temptation bundling: pair enjoyable activities with habits you avoid
+- Commitment devices: put money on the line for important habits
+- Environment design suggestions: app notices where habits fail and suggests changes
+- Social accountability: find an accountability partner in the app
+
+The AI layer would analyze your check-in patterns and automatically switch techniques when current ones stop working.`,
+    category: "Health",
+    difficulty: "medium",
+    status: "open",
+    votes: 198,
+    comments: 44,
+    submittedBy: "behavior_designer",
+    submittedAt: "2024-02-20",
+    marketSize: "$4.5B (Wellness Apps)",
+    techStack: ["React Native", "Node.js", "OpenAI", "PostgreSQL"],
+    estimatedDuration: "3-4 months",
+    tags: ["Habits", "Behavioral Science", "Health", "AI", "Mobile"],
+  },
+  {
+    id: "11",
+    title: "E-commerce Returns Reduction SaaS",
+    description:
+      "AI that predicts which customers are likely to return products before purchase, and shows personalized sizing/fit guidance to reduce return rates.",
+    longDescription: `E-commerce returns cost $816B globally in 2022. Most of it is preventable. The #1 reason: wrong size or didn't match expectations.
+
+How this works:
+- Merchant installs a JS snippet (like a pixel)
+- Customer uploads a photo or inputs measurements
+- AI predicts their true size across different brands
+- Shows size-specific reviews ("This reviewer is your size and says…")
+- Flags items with high return rates for this customer's profile
+- A/B tests show 20-35% reduction in returns in pilot data
+
+Revenue model: $0.02 per order touch or 2% of saved return costs. At scale, this is a huge number.`,
+    category: "E-commerce",
+    difficulty: "hard",
+    status: "open",
+    votes: 245,
+    comments: 61,
+    bounty: 600,
+    submittedBy: "ecom_veteran",
+    submittedAt: "2024-02-22",
+    marketSize: "$816B (E-commerce Returns Market)",
+    techStack: ["Python", "TensorFlow", "Shopify API", "React", "FastAPI"],
+    estimatedDuration: "4-6 months",
+    tags: ["E-commerce", "AI", "Returns", "Sizing", "Shopify"],
+  },
+  {
+    id: "12",
+    title: "Automated Competitive Intelligence for B2B SaaS",
+    description:
+      "Monitors competitor websites, job postings, and social media to surface strategic insights for your sales and product team daily.",
+    longDescription: `Sales teams spend hours manually researching competitors. Product managers miss competitor feature launches. This tool automates competitive intelligence.
+
+What it monitors:
+- Competitor pricing page changes (instant alerts)
+- New job postings (e.g., competitor hiring ML engineers = new AI feature incoming)
+- G2/Capterra reviews (what users hate about competitors)
+- Social media mentions and sentiment
+- Press releases and blog posts
+- SEO ranking changes
+
+Delivers:
+- Daily Slack/email digest
+- Battle cards auto-updated for sales
+- Win/loss analysis correlation
+
+Customers: B2B SaaS companies with 10+ sales reps.`,
+    category: "SaaS",
+    difficulty: "hard",
+    status: "in_progress",
+    votes: 176,
+    comments: 33,
+    bounty: 400,
+    submittedBy: "b2b_strategist",
+    submittedAt: "2024-03-01",
+    claimedBy: "builder_mike",
+    marketSize: "$900M (Competitive Intelligence)",
+    techStack: ["Python", "Playwright", "OpenAI", "PostgreSQL", "Redis"],
+    estimatedDuration: "3-5 months",
+    tags: ["B2B", "SaaS", "Competitive Intelligence", "Sales", "Automation"],
+  },
+  {
+    id: "13",
+    title: "Video Course Platform with AI Practice Mode",
+    description:
+      "Online courses where AI quizzes you on the material between videos and adapts the curriculum based on what you actually understand.",
+    longDescription: `Passive video watching has terrible retention. Most people who buy online courses finish fewer than 10% of them. The fix is active recall and spaced repetition.
+
+Platform features:
+- After each video segment, AI generates 3-5 questions from the content
+- If you struggle, it sends you back to the relevant section
+- Spaced repetition schedule for concept review
+- Project-based checkpoints: build something real to unlock the next module
+- Social proof: see what other learners found confusing in this section
+- Creator tools: upload videos, AI auto-generates quiz questions
+
+The creator side is key — this is a platform, not a course. Existing creators can migrate their Teachable/Udemy courses and get higher completion rates.`,
+    category: "Education",
+    difficulty: "hard",
+    status: "open",
+    votes: 221,
+    comments: 52,
+    bounty: 750,
+    submittedBy: "learning_scientist",
+    submittedAt: "2024-03-05",
+    marketSize: "$50B (EdTech)",
+    techStack: ["Next.js", "PostgreSQL", "OpenAI", "AWS S3", "Stripe"],
+    estimatedDuration: "6-9 months",
+    tags: ["Education", "AI", "Video Courses", "Learning", "EdTech"],
+  },
+  {
+    id: "14",
+    title: "WhatsApp Business Automation for Restaurants",
+    description:
+      "No-code tool that lets restaurants take orders, reservations, and handle customer service entirely via WhatsApp.",
+    longDescription: `In Southeast Asia, Latin America, and the Middle East, WhatsApp is how people communicate with businesses. Yet most restaurants use it manually — one person reading and replying to dozens of messages.
+
+This tool would:
+- Let customers browse the menu in WhatsApp (via a carousel flow)
+- Accept orders and payment (integrated with local payment gateways)
+- Manage reservations with automatic reminders
+- Send order status updates
+- Handle FAQ with AI (opening hours, parking, dietary info)
+- Route complex questions to a human staff member
+
+Zero-code setup: restaurant owner connects their WhatsApp Business account and fills in their menu/info.`,
+    category: "E-commerce",
+    difficulty: "medium",
+    status: "validated",
+    votes: 193,
+    comments: 47,
+    submittedBy: "restaurant_tech",
+    submittedAt: "2024-01-08",
+    claimedBy: "builder_team_alpha",
+    marketSize: "$5.6B (Restaurant Tech)",
+    techStack: ["Node.js", "WhatsApp Cloud API", "Stripe", "PostgreSQL"],
+    estimatedDuration: "2-3 months",
+    tags: ["WhatsApp", "Restaurant", "Automation", "No-code", "Emerging Markets"],
+  },
+  {
+    id: "15",
+    title: "Personal Finance OS for Expats",
+    description:
+      "A finance dashboard that handles multi-currency income, cross-border tax implications, and investment accounts across different countries.",
+    longDescription: `Expats have uniquely complex finances that no mainstream tool handles: income in multiple currencies, tax obligations in 2+ countries, investments you can't easily move, and constantly changing exchange rates affecting net worth.
+
+Features:
+- Connect bank accounts from 30+ countries
+- Net worth in any base currency with real-time FX
+- Tax calendar: deadlines across multiple jurisdictions
+- FEIE/Foreign Tax Credit calculator (for US expats)
+- Investment accounts: track pensions, provident funds, 401k equivalents
+- Cost of living tracker per city for relocation planning
+- Emergency fund calculator adjusted for your specific country risk
+
+Monetization: $20/month or $180/year. TAM of 66M+ expats worldwide.`,
+    category: "Finance",
+    difficulty: "hard",
+    status: "open",
+    votes: 168,
+    comments: 29,
+    bounty: 350,
+    submittedBy: "digital_nomad_cfo",
+    submittedAt: "2024-03-08",
+    marketSize: "$12B (Personal Finance Software)",
+    techStack: ["Next.js", "Plaid API", "OpenExchangeRates", "PostgreSQL"],
+    estimatedDuration: "4-6 months",
+    tags: ["Finance", "Expat", "Multi-currency", "Tax", "Personal Finance"],
+  },
 ];
 
 export const comments: Comment[] = [
@@ -322,6 +529,116 @@ export const comments: Comment[] = [
       "I'd love to build this. Thinking of using tree-sitter for AST analysis + GPT-4 for the context layer. Anyone want to collaborate?",
     createdAt: "2024-01-20",
     likes: 31,
+  },
+  {
+    id: "c5",
+    ideaId: "2",
+    author: "indiehacker_zhou",
+    avatar: "IZ",
+    content:
+      "Been waiting for this forever. I use Stripe + Gumroad + Lemonsqueezy and reconciling them monthly is a nightmare. Would pay for this on day one.",
+    createdAt: "2024-01-21",
+    likes: 19,
+  },
+  {
+    id: "c6",
+    ideaId: "2",
+    author: "builder_mike",
+    avatar: "BM",
+    content:
+      "I've claimed this one. Starting with Stripe + Paddle as the first integrations. ETA is 6 weeks. Will post updates here.",
+    createdAt: "2024-01-22",
+    likes: 44,
+  },
+  {
+    id: "c7",
+    ideaId: "3",
+    author: "b2b_marketer",
+    avatar: "BM",
+    content:
+      "The tone optimization angle is really smart. LinkedIn's algorithm rewards posts that get early engagement — and tone directly affects that. Would love a beta invite.",
+    createdAt: "2024-02-02",
+    likes: 13,
+  },
+  {
+    id: "c8",
+    ideaId: "3",
+    author: "growth_guru_jen",
+    avatar: "GJ",
+    content:
+      "This is my own idea so I'm biased, but happy to provide all the UX research I've done. I've interviewed 40 LinkedIn creators about their scheduling pain points.",
+    createdAt: "2024-02-03",
+    likes: 28,
+  },
+  {
+    id: "c9",
+    ideaId: "9",
+    author: "obsidian_user",
+    avatar: "OU",
+    content:
+      "Obsidian is close but has no real-time collaboration. Notion is the opposite problem. Something git-native would be perfect for my dev team's shared knowledge base.",
+    createdAt: "2024-02-19",
+    likes: 52,
+  },
+  {
+    id: "c10",
+    ideaId: "9",
+    author: "oss_skeptic",
+    avatar: "OS",
+    content:
+      "The git-sync is a great idea on paper but markdown files in git don't handle rich embeds well. You'd need a solid convention layer. Have you thought about the image/attachment story?",
+    createdAt: "2024-02-20",
+    likes: 21,
+  },
+  {
+    id: "c11",
+    ideaId: "9",
+    author: "oss_advocate",
+    avatar: "OA",
+    content:
+      "For images: store in /assets folder, auto-committed alongside content. For attachments: Git LFS or a pluggable S3 adapter. The convention should be simple enough for non-devs.",
+    createdAt: "2024-02-21",
+    likes: 35,
+  },
+  {
+    id: "c12",
+    ideaId: "11",
+    author: "shopify_merchant",
+    avatar: "SM",
+    content:
+      "Return rates are killing our margins. We spend $18 per return on average. Even cutting that 20% would be enormous. What's the pricing model?",
+    createdAt: "2024-02-23",
+    likes: 16,
+  },
+  {
+    id: "c13",
+    ideaId: "11",
+    author: "ecom_veteran",
+    avatar: "EV",
+    content:
+      "Planning $0.02 per order touched (not per return saved). For a merchant doing 10k orders/month, that's $200/month for a tool that could save them $5-10k in returns.",
+    createdAt: "2024-02-24",
+    likes: 29,
+  },
+  {
+    id: "c14",
+    ideaId: "6",
+    author: "bootcamp_grad",
+    avatar: "BG",
+    content:
+      "As a recent bootcamp grad, the #1 thing missing from my education was experience with real codebases. Tutorial apps are nothing like production code.",
+    createdAt: "2024-02-11",
+    likes: 67,
+  },
+  {
+    id: "c15",
+    ideaId: "6",
+    author: "startup_cto",
+    avatar: "SC",
+    content:
+      "From a startup's perspective: we'd love to contribute our codebase but need privacy guarantees. Is there a way to anonymize function names / business logic automatically?",
+    createdAt: "2024-02-12",
+    likes: 41,
   },
 ];
 
@@ -405,6 +722,26 @@ export const leaderboard: User[] = [
     ideasBuilt: 1,
     joinedAt: "2024-02-01",
     badges: ["Product Thinker"],
+  },
+  {
+    id: "u9",
+    name: "OSS Advocate",
+    avatar: "OA",
+    points: 980,
+    ideasSubmitted: 4,
+    ideasBuilt: 3,
+    joinedAt: "2024-02-05",
+    badges: ["Open Source Hero"],
+  },
+  {
+    id: "u10",
+    name: "EcomVeteran",
+    avatar: "EV",
+    points: 860,
+    ideasSubmitted: 3,
+    ideasBuilt: 2,
+    joinedAt: "2024-02-10",
+    badges: ["Market Expert"],
   },
 ];
 

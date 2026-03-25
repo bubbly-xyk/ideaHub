@@ -17,8 +17,10 @@ import {
   Share2,
   Bookmark,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
-import { ideas, comments as allComments } from "@/lib/data";
+import { ideas, comments as allComments, type Comment } from "@/lib/data";
+import { useToast } from "@/lib/toast";
 
 const statusConfig = {
   open: {
@@ -51,34 +53,105 @@ const difficultyConfig = {
 
 export default function IdeaDetailPage({ params }: { params: { id: string } }) {
   const idea = ideas.find((i) => i.id === params.id);
+  if (!idea) notFound();
 
-  if (!idea) {
-    notFound();
-  }
+  const { toast } = useToast();
 
-  const ideaComments = allComments.filter((c) => c.ideaId === idea.id);
-  const status = statusConfig[idea.status];
-  const difficulty = difficultyConfig[idea.difficulty];
-
+  const [localComments, setLocalComments] = useState<Comment[]>(
+    allComments.filter((c) => c.ideaId === idea.id)
+  );
   const [voted, setVoted] = useState(false);
   const [votes, setVotes] = useState(idea.votes);
+  const [bookmarked, setBookmarked] = useState(false);
   const [comment, setComment] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
   const [claimed, setClaimed] = useState(idea.status !== "open");
+  const [claimedBy, setClaimedBy] = useState(idea.claimedBy ?? "");
+  const [currentStatus, setCurrentStatus] = useState(idea.status);
   const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimLoading, setClaimLoading] = useState(false);
 
-  const handleVote = () => {
-    if (!voted) {
-      setVotes(votes + 1);
-      setVoted(true);
-    } else {
-      setVotes(votes - 1);
-      setVoted(false);
+  const status = statusConfig[currentStatus];
+  const difficulty = difficultyConfig[idea.difficulty];
+
+  const handleVote = async () => {
+    const action = voted ? "unvote" : "vote";
+    setVoted(!voted);
+    setVotes((v) => v + (voted ? -1 : 1));
+    try {
+      const res = await fetch(`/api/ideas/${idea.id}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) {
+        if (!voted) toast("投票成功！创作者获得 +2 积分 ✨");
+      }
+    } catch {
+      // optimistic UI — keep local state even if API fails
     }
   };
 
-  const handleClaim = () => {
-    setClaimed(true);
-    setShowClaimModal(false);
+  const handleBookmark = () => {
+    setBookmarked(!bookmarked);
+    toast(bookmarked ? "已取消收藏" : "收藏成功！", "info");
+  };
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast("链接已复制到剪贴板 🔗", "info");
+    } catch {
+      toast("分享链接：" + window.location.href, "info");
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!comment.trim()) return;
+    setSubmittingComment(true);
+    try {
+      const res = await fetch(`/api/ideas/${idea.id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: comment, author: "TechFounder Alex" }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLocalComments((prev) => [...prev, data.comment]);
+        setComment("");
+        toast("评论发布成功！+1 积分 💬");
+      }
+    } catch {
+      toast("发布失败，请重试", "error");
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleClaim = async () => {
+    setClaimLoading(true);
+    try {
+      const res = await fetch(`/api/ideas/${idea.id}/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimedBy: "TechFounder Alex" }),
+      });
+      if (res.ok) {
+        setClaimed(true);
+        setClaimedBy("TechFounder Alex");
+        setCurrentStatus("in_progress");
+        setShowClaimModal(false);
+        toast("认领成功！加油实现它吧 🚀");
+      } else {
+        const err = await res.json();
+        toast(err.error ?? "认领失败", "error");
+        setShowClaimModal(false);
+      }
+    } catch {
+      toast("网络错误，请重试", "error");
+    } finally {
+      setClaimLoading(false);
+    }
   };
 
   return (
@@ -97,7 +170,6 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
         <div className="lg:col-span-2 space-y-6">
           {/* Header Card */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            {/* Badges */}
             <div className="flex flex-wrap gap-2 mb-3">
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${status.className}`}>
                 {status.label}
@@ -117,18 +189,21 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
 
             <h1 className="text-2xl font-bold text-gray-900 mb-3">{idea.title}</h1>
             <p className="text-gray-500 text-sm mb-4">
-              by <span className="font-medium text-gray-700">{idea.submittedBy}</span>
+              by{" "}
+              <span className="font-medium text-gray-700">{idea.submittedBy}</span>
               {" · "}
               {idea.submittedAt}
-              {idea.claimedBy && (
+              {claimedBy && (
                 <>
-                  {" · "}认领者：<span className="font-medium text-blue-600">{idea.claimedBy}</span>
+                  {" · "}
+                  认领者：
+                  <span className="font-medium text-blue-600">{claimedBy}</span>
                 </>
               )}
             </p>
 
-            {/* Status info banner */}
-            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm mb-4 ${status.className} bg-opacity-50`}>
+            {/* Status banner */}
+            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm mb-4 ${status.className}`}>
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{status.desc}</span>
             </div>
@@ -136,20 +211,17 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-4">
               {idea.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-2 py-1 bg-indigo-50 text-indigo-600 rounded"
-                >
+                <span key={tag} className="text-xs px-2 py-1 bg-indigo-50 text-indigo-600 rounded">
                   #{tag}
                 </span>
               ))}
             </div>
 
-            {/* Vote + Share buttons */}
+            {/* Actions */}
             <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
               <button
                 onClick={handleVote}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-medium text-sm transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-medium text-sm transition-all ${
                   voted
                     ? "bg-indigo-600 text-white border-indigo-600"
                     : "border-gray-200 text-gray-600 hover:border-indigo-400 hover:text-indigo-600"
@@ -158,11 +230,21 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
                 <ThumbsUp className="w-4 h-4" />
                 {voted ? "已投票" : "投票"} ({votes})
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:border-gray-300 text-sm">
+              <button
+                onClick={handleBookmark}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition-all ${
+                  bookmarked
+                    ? "bg-yellow-50 text-yellow-600 border-yellow-300"
+                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                }`}
+              >
                 <Bookmark className="w-4 h-4" />
-                收藏
+                {bookmarked ? "已收藏" : "收藏"}
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:border-gray-300 text-sm">
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:border-gray-300 text-sm"
+              >
                 <Share2 className="w-4 h-4" />
                 分享
               </button>
@@ -181,12 +263,16 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h2 className="font-semibold text-gray-900 mb-5 flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
-              讨论 ({ideaComments.length + 1})
+              讨论 ({localComments.length})
             </h2>
 
-            {/* Comment list */}
-            <div className="space-y-4 mb-6">
-              {ideaComments.map((c) => (
+            <div className="space-y-5 mb-6">
+              {localComments.length === 0 && (
+                <p className="text-center text-gray-400 text-sm py-6">
+                  还没有评论，来发表第一条吧 ✨
+                </p>
+              )}
+              {localComments.map((c) => (
                 <div key={c.id} className="flex gap-3">
                   <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold flex items-center justify-center flex-shrink-0">
                     {c.avatar}
@@ -208,21 +294,32 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
 
             {/* Comment input */}
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0" />
+              <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                TA
+              </div>
               <div className="flex-1">
                 <textarea
                   placeholder="分享你的看法、可行性分析、或表示有意愿参与..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmitComment();
+                  }}
                   rows={3}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 resize-none"
                 />
-                <div className="flex justify-end mt-2">
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-xs text-gray-400">Ctrl+Enter 快捷发送</span>
                   <button
-                    disabled={!comment.trim()}
+                    onClick={handleSubmitComment}
+                    disabled={!comment.trim() || submittingComment}
                     className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40 hover:bg-indigo-700 transition-colors"
                   >
-                    <Send className="w-3.5 h-3.5" />
+                    {submittingComment ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5" />
+                    )}
                     发表评论
                   </button>
                 </div>
@@ -233,11 +330,11 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
 
         {/* Sidebar */}
         <div className="space-y-4">
-          {/* Claim button */}
+          {/* Claim */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h3 className="font-semibold text-gray-900 mb-2">你能实现它吗？</h3>
             <p className="text-sm text-gray-500 mb-4">
-              如果你有技术能力，认领这个点子并把它变成现实。
+              认领这个点子并把它变成现实。
               {idea.bounty && (
                 <span className="text-yellow-600 font-medium">
                   {" "}完成可获得 ${idea.bounty} 悬赏。
@@ -263,7 +360,6 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
           {/* Project Info */}
           <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
             <h3 className="font-semibold text-gray-900">项目信息</h3>
-
             <div>
               <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
                 <BarChart2 className="w-3.5 h-3.5" />
@@ -271,7 +367,6 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
               </div>
               <div className="text-sm font-medium text-gray-800">{idea.marketSize}</div>
             </div>
-
             <div>
               <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
                 <Clock className="w-3.5 h-3.5" />
@@ -279,7 +374,6 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
               </div>
               <div className="text-sm font-medium text-gray-800">{idea.estimatedDuration}</div>
             </div>
-
             <div>
               <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
                 <Code className="w-3.5 h-3.5" />
@@ -287,28 +381,24 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {idea.techStack.map((tech) => (
-                  <span
-                    key={tech}
-                    className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded"
-                  >
+                  <span key={tech} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
                     {tech}
                   </span>
                 ))}
               </div>
             </div>
-
             <div>
               <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
                 <Users className="w-3.5 h-3.5" />
                 参与人数
               </div>
               <div className="text-sm font-medium text-gray-800">
-                {idea.votes} 人投票 · {idea.comments} 条评论
+                {votes} 人投票 · {localComments.length} 条评论
               </div>
             </div>
           </div>
 
-          {/* Points reward info */}
+          {/* Rewards */}
           <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-5">
             <h3 className="font-semibold text-gray-900 mb-3">完成奖励</h3>
             <div className="space-y-2 text-sm">
@@ -334,27 +424,38 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
       {/* Claim Modal */}
       {showClaimModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
             <h3 className="text-xl font-bold text-gray-900 mb-2">确认认领</h3>
             <p className="text-gray-500 text-sm mb-4">
-              认领后，该点子状态将变为&ldquo;实现中&rdquo;，其他 Builder 将看到有人正在做了。
+              认领后，该点子状态变为「实现中」，其他 Builder 将看到有人正在做了。
               请确保你有能力在合理时间内完成。
             </p>
             <div className="bg-indigo-50 rounded-lg p-3 text-sm text-indigo-700 mb-5">
               完成后可获得 <strong>500积分</strong>
-              {idea.bounty && <> + <strong>${idea.bounty} 悬赏</strong></>}
+              {idea.bounty && (
+                <>
+                  {" "}+ <strong>${idea.bounty} USD 悬赏</strong>
+                </>
+              )}
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowClaimModal(false)}
-                className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                disabled={claimLoading}
+                className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40"
               >
                 取消
               </button>
               <button
                 onClick={handleClaim}
-                className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors"
+                disabled={claimLoading}
+                className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
               >
+                {claimLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-4 h-4" />
+                )}
                 确认认领
               </button>
             </div>

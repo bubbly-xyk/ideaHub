@@ -10,8 +10,10 @@ import {
   Plus,
   X,
   DollarSign,
+  Loader2,
 } from "lucide-react";
 import { categories } from "@/lib/data";
+import { useToast } from "@/lib/toast";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -77,8 +79,10 @@ const commonTechStack = [
 
 export default function SubmitPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [techInput, setTechInput] = useState("");
 
@@ -137,8 +141,30 @@ export default function SubmitPage() {
     return true;
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          bounty: form.hasBounty && form.bounty ? Number(form.bounty) : undefined,
+          submittedBy: "TechFounder Alex",
+        }),
+      });
+      if (res.ok) {
+        toast("点子提交成功！+50 积分已到账 🎉");
+        setSubmitted(true);
+      } else {
+        const err = await res.json();
+        toast(err.error ?? "提交失败，请重试", "error");
+      }
+    } catch {
+      toast("网络错误，请重试", "error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -569,10 +595,15 @@ export default function SubmitPage() {
           ) : (
             <button
               onClick={handleSubmit}
-              className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors"
+              disabled={submitting}
+              className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
             >
-              <CheckCircle className="w-4 h-4" />
-              提交点子，获得50积分
+              {submitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4" />
+              )}
+              {submitting ? "提交中..." : "提交点子，获得50积分"}
             </button>
           )}
         </div>
