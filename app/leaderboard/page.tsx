@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trophy, Star, Lightbulb, Hammer, Crown, Medal } from "lucide-react";
-import { leaderboard, pointsRules } from "@/lib/data";
+import { pointsRules } from "@/lib/data";
+import type { User } from "@/lib/data";
 
 type BoardTab = "points" | "creator" | "builder";
 
@@ -27,19 +28,26 @@ const getRankStyle = (rank: number) => {
 
 export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<BoardTab>("points");
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    fetch("/api/leaderboard")
+      .then((r) => r.json())
+      .then((data) => setUsers(data.users ?? []));
+  }, []);
 
   const getSortedUsers = () => {
     switch (activeTab) {
       case "points":
-        return [...leaderboard].sort((a, b) => b.points - a.points);
+        return [...users].sort((a, b) => b.points - a.points);
       case "creator":
-        return [...leaderboard].sort((a, b) => b.ideasSubmitted - a.ideasSubmitted);
+        return [...users].sort((a, b) => b.ideasSubmitted - a.ideasSubmitted);
       case "builder":
-        return [...leaderboard].sort((a, b) => b.ideasBuilt - a.ideasBuilt);
+        return [...users].sort((a, b) => b.ideasBuilt - a.ideasBuilt);
     }
   };
 
-  const getMetric = (user: (typeof leaderboard)[0]) => {
+  const getMetric = (user: User) => {
     switch (activeTab) {
       case "points":
         return { value: user.points.toLocaleString(), label: "积分" };

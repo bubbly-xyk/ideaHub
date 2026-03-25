@@ -9,7 +9,7 @@ export async function POST(
   const body = await request.json();
   const claimedBy = body.claimedBy ?? "anonymous_builder";
 
-  const updated = claimIdea(id, claimedBy);
+  const updated = await claimIdea(id, claimedBy);
   if (!updated) {
     return NextResponse.json(
       { error: "Idea not found or already claimed" },

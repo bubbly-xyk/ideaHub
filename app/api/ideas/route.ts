@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getIdeas, addIdea } from "@/lib/store";
-import type { Idea } from "@/lib/data";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,7 +10,7 @@ export async function GET(request: Request) {
   const sort = searchParams.get("sort") ?? "votes";
   const q = searchParams.get("q");
 
-  let ideas = getIdeas();
+  let ideas = await getIdeas();
 
   if (q) {
     const lower = q.toLowerCase();
@@ -55,8 +54,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const newIdea: Idea = {
-    id: Date.now().toString(),
+  const newIdea = await addIdea({
     title: body.title,
     description: body.description,
     longDescription: body.longDescription ?? "",
@@ -72,9 +70,7 @@ export async function POST(request: Request) {
     techStack: body.techStack ?? [],
     estimatedDuration: body.estimatedDuration ?? "未定",
     tags: body.tags ?? [],
-  };
-
-  addIdea(newIdea);
+  });
 
   return NextResponse.json({ idea: newIdea, pointsEarned: 50 }, { status: 201 });
 }
