@@ -20,7 +20,7 @@ async function main() {
     await client.query("BEGIN");
 
     // 1. Apply schema
-    const schema = readFileSync(join(__dirname, "schema.sql"), "utf8");
+    const schema = readFileSync(join(__dirname, "schema-prod.sql"), "utf8");
     await client.query(schema);
     console.log("✓ Schema applied");
 
