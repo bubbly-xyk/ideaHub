@@ -11,10 +11,11 @@ import {
   DollarSign,
   X,
   Lightbulb,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import IdeaCard from "@/components/IdeaCard";
-import { ideas, categories, type IdeaCategory, type IdeaDifficulty, type IdeaStatus } from "@/lib/data";
+import { categories, type Idea, type IdeaCategory, type IdeaDifficulty, type IdeaStatus } from "@/lib/data";
 
 type SortOption = "votes" | "newest" | "bounty" | "comments";
 
@@ -42,7 +43,9 @@ function IdeasContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read initial state from URL
+  const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [selectedCategory, setSelectedCategory] = useState<IdeaCategory | null>(
     (searchParams.get("category") as IdeaCategory) ?? null
@@ -62,16 +65,20 @@ function IdeasContent() {
        searchParams.get("status") || searchParams.get("filter"))
   );
 
-  // Sync filters → URL (debounced for query)
+  // Fetch ideas from DB
+  useEffect(() => {
+    fetch("/api/ideas")
+      .then((r) => r.json())
+      .then((data) => {
+        setIdeas(data.ideas ?? []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  // Sync filters → URL
   const syncURL = useCallback(
-    (
-      q: string,
-      cat: string | null,
-      diff: string | null,
-      status: string | null,
-      bounty: boolean,
-      sort: string
-    ) => {
+    (q: string, cat: string | null, diff: string | null, status: string | null, bounty: boolean, sort: string) => {
       const p = new URLSearchParams();
       if (q) p.set("q", q);
       if (cat) p.set("category", cat);
@@ -85,7 +92,6 @@ function IdeasContent() {
     [router]
   );
 
-  // Debounce query sync
   useEffect(() => {
     const t = setTimeout(() => {
       syncURL(query, selectedCategory, selectedDifficulty, selectedStatus, bountyOnly, sortBy);
@@ -122,10 +128,9 @@ function IdeasContent() {
         result.sort((a, b) => b.votes - a.votes);
     }
     return result;
-  }, [query, selectedCategory, selectedDifficulty, selectedStatus, bountyOnly, sortBy]);
+  }, [ideas, query, selectedCategory, selectedDifficulty, selectedStatus, bountyOnly, sortBy]);
 
-  const activeFiltersCount = [selectedCategory, selectedDifficulty, selectedStatus, bountyOnly]
-    .filter(Boolean).length;
+  const activeFiltersCount = [selectedCategory, selectedDifficulty, selectedStatus, bountyOnly].filter(Boolean).length;
 
   const clearFilters = () => {
     setSelectedCategory(null);
@@ -141,7 +146,7 @@ function IdeasContent() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">探索点子</h1>
           <p className="text-gray-500">
-            {ideas.length} 个点子 · 发现你的下一个 side project
+            {loading ? "加载中..." : `${ideas.length} 个点子 · 发现你的下一个 side project`}
           </p>
         </div>
         <Link
@@ -165,10 +170,7 @@ function IdeasContent() {
             className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 bg-white"
           />
           {query && (
-            <button
-              onClick={() => setQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -197,16 +199,11 @@ function IdeasContent() {
           <div className="flex items-center justify-between">
             <span className="font-medium text-gray-900 text-sm">筛选条件</span>
             {activeFiltersCount > 0 && (
-              <button
-                onClick={clearFilters}
-                className="text-xs text-red-500 hover:text-red-600 flex items-center gap-1"
-              >
-                <X className="w-3 h-3" />
-                清除全部
+              <button onClick={clearFilters} className="text-xs text-red-500 hover:text-red-600 flex items-center gap-1">
+                <X className="w-3 h-3" />清除全部
               </button>
             )}
           </div>
-
           <div>
             <div className="text-xs font-medium text-gray-500 mb-2">领域</div>
             <div className="flex flex-wrap gap-2">
@@ -225,7 +222,6 @@ function IdeasContent() {
               ))}
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="text-xs font-medium text-gray-500 mb-2">难度</div>
@@ -245,7 +241,6 @@ function IdeasContent() {
                 ))}
               </div>
             </div>
-
             <div>
               <div className="text-xs font-medium text-gray-500 mb-2">状态</div>
               <div className="flex flex-wrap gap-2">
@@ -265,19 +260,12 @@ function IdeasContent() {
               </div>
             </div>
           </div>
-
           <div className="flex items-center gap-3">
             <button
               onClick={() => setBountyOnly(!bountyOnly)}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                bountyOnly ? "bg-yellow-500" : "bg-gray-200"
-              }`}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${bountyOnly ? "bg-yellow-500" : "bg-gray-200"}`}
             >
-              <span
-                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                  bountyOnly ? "translate-x-4" : "translate-x-1"
-                }`}
-              />
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${bountyOnly ? "translate-x-4" : "translate-x-1"}`} />
             </button>
             <span className="text-sm text-gray-700">
               只看有悬赏的点子
@@ -289,14 +277,13 @@ function IdeasContent() {
         </div>
       )}
 
-      {/* Sort + count bar */}
+      {/* Sort + count */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div className="text-sm text-gray-500">
-          找到{" "}
-          <span className="font-semibold text-gray-900">{filtered.length}</span>{" "}
-          个点子
-          {query && (
-            <span className="text-gray-400">（搜索：&ldquo;{query}&rdquo;）</span>
+          {loading ? (
+            <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />加载中...</span>
+          ) : (
+            <>找到 <span className="font-semibold text-gray-900">{filtered.length}</span> 个点子{query && <span className="text-gray-400">（搜索：&ldquo;{query}&rdquo;）</span>}</>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -311,29 +298,34 @@ function IdeasContent() {
                   : "border-gray-200 text-gray-600 hover:border-indigo-300 bg-white"
               }`}
             >
-              {opt.icon}
-              {opt.label}
+              {opt.icon}{opt.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* List */}
-      {filtered.length > 0 ? (
+      {/* Loading skeleton */}
+      {loading && (
         <div className="space-y-3">
-          {filtered.map((idea) => (
-            <IdeaCard key={idea.id} idea={idea} />
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 bg-white border border-gray-200 rounded-xl animate-pulse" />
           ))}
         </div>
-      ) : (
+      )}
+
+      {/* List */}
+      {!loading && filtered.length > 0 && (
+        <div className="space-y-3">
+          {filtered.map((idea) => <IdeaCard key={idea.id} idea={idea} />)}
+        </div>
+      )}
+
+      {!loading && filtered.length === 0 && (
         <div className="text-center py-20 text-gray-400">
           <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="text-lg font-medium text-gray-600">没有找到匹配的点子</p>
           <p className="text-sm mt-1 mb-6">试试调整筛选条件，或者把这个点子提交给社区！</p>
-          <Link
-            href="/submit"
-            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors"
-          >
+          <Link href="/submit" className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors">
             <Lightbulb className="w-4 h-4" />
             提交这个点子
           </Link>
@@ -351,9 +343,7 @@ export default function IdeasPage() {
           <div className="h-8 bg-gray-200 rounded w-48" />
           <div className="h-4 bg-gray-100 rounded w-64" />
           <div className="h-12 bg-gray-100 rounded-xl" />
-          {[1,2,3,4].map(i => (
-            <div key={i} className="h-28 bg-white border border-gray-200 rounded-xl" />
-          ))}
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 bg-white border border-gray-200 rounded-xl" />)}
         </div>
       </div>
     }>

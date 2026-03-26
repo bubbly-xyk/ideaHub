@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ToastProvider } from "@/lib/toast";
+import SessionProviderWrapper from "@/components/SessionProviderWrapper";
 
 export const metadata: Metadata = {
   title: "IdeaHub - 连接创意与实现",
@@ -18,11 +19,13 @@ export default function RootLayout({
   return (
     <html lang="zh">
       <body className="bg-gray-50 min-h-screen font-sans antialiased">
-        <ToastProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </ToastProvider>
+        <SessionProviderWrapper>
+          <ToastProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+          </ToastProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
