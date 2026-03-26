@@ -12,7 +12,8 @@ function createPool(): Pool {
     // Reasonable defaults — tune for your environment
     max: 10,
     idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 2_000,
+    connectionTimeoutMillis: 10_000,
+    ssl: process.env.DATABASE_URL?.includes("neon.tech") ? { rejectUnauthorized: false } : false,
   });
 }
 
