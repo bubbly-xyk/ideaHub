@@ -7,14 +7,18 @@ import pool from "./db";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
+    ...(process.env.GITHUB_ID && process.env.GITHUB_SECRET
+      ? [GithubProvider({
+          clientId: process.env.GITHUB_ID,
+          clientSecret: process.env.GITHUB_SECRET,
+        })]
+      : []),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [GoogleProvider({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        })]
+      : []),
     CredentialsProvider({
       id: "credentials",
       name: "邮箱登录",
@@ -50,21 +54,47 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "github" || account?.provider === "google") {
-        // Upsert OAuth user into users table
-        await pool.query(
-          `INSERT INTO users (id, name, avatar, email, provider, provider_id, email_verified, points, joined_at)
-           VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, TRUE, 0, NOW())
-           ON CONFLICT (email) DO UPDATE
-           SET name = EXCLUDED.name, avatar = EXCLUDED.avatar, provider_id = EXCLUDED.provider_id`,
-          [user.name, user.image, user.email, account.provider, account.providerAccountId]
-        );
+        try {
+          if (user.email) {
+            // Has email: upsert by email
+            await pool.query(
+              `INSERT INTO users (id, name, avatar, email, provider, provider_id, email_verified, points, joined_at)
+               VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, TRUE, 0, NOW())
+               ON CONFLICT (email) DO UPDATE
+               SET name = EXCLUDED.name, avatar = EXCLUDED.avatar, provider_id = EXCLUDED.provider_id`,
+              [user.name ?? "User", user.image ?? "", user.email, account.provider, account.providerAccountId]
+            );
+          } else {
+            // No email (e.g. GitHub private email): upsert by provider_id
+            await pool.query(
+              `INSERT INTO users (id, name, avatar, email, provider, provider_id, email_verified, points, joined_at)
+               VALUES (gen_random_uuid(), $1, $2, NULL, $3, $4, TRUE, 0, NOW())
+               ON CONFLICT (provider_id) DO UPDATE
+               SET name = EXCLUDED.name, avatar = EXCLUDED.avatar`,
+              [user.name ?? "User", user.image ?? "", account.provider, account.providerAccountId]
+            );
+          }
+        } catch (err) {
+          console.error("signIn callback error:", err);
+          // Don't block sign-in on DB error
+        }
       }
       return true;
     },
     async jwt({ token, user, account }) {
       if (user) {
-        const { rows } = await pool.query("SELECT id, name FROM users WHERE email = $1", [user.email]);
-        if (rows[0]) token.userId = rows[0].id;
+        try {
+          let rows;
+          if (user.email) {
+            ({ rows } = await pool.query("SELECT id FROM users WHERE email = $1", [user.email]));
+          }
+          if (account?.providerAccountId && (!rows || rows.length === 0)) {
+            ({ rows } = await pool.query("SELECT id FROM users WHERE provider_id = $1", [account.providerAccountId]));
+          }
+          if (rows?.[0]) token.userId = rows[0].id;
+        } catch (err) {
+          console.error("jwt callback error:", err);
+        }
         token.name = user.name;
       }
       return token;

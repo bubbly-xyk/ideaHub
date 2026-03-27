@@ -54,6 +54,13 @@ export async function POST(request: Request) {
     }
   }
 
+  // bountyPoints is points (1000 pts = $1), bounty field stores USD equivalent
+  const bountyUsd = body.bountyPoints
+    ? Number(body.bountyPoints) / 1000
+    : body.bounty
+    ? Number(body.bounty)
+    : undefined;
+
   const newIdea = await addIdea({
     title: body.title,
     description: body.description,
@@ -63,7 +70,7 @@ export async function POST(request: Request) {
     status: "open",
     votes: 0,
     comments: 0,
-    bounty: body.bounty ? Number(body.bounty) : undefined,
+    bounty: bountyUsd,
     submittedBy: body.submittedBy ?? "anonymous",
     submittedAt: new Date().toISOString().split("T")[0],
     marketSize: body.marketSize ?? "未知",

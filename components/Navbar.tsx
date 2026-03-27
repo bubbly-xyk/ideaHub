@@ -65,10 +65,10 @@ export default function Navbar() {
             ) : user ? (
               <>
                 {/* Points */}
-                <div className="flex items-center gap-1.5 text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-full">
+                <Link href="/profile" className="flex items-center gap-1.5 text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-full hover:bg-amber-100 transition-colors">
                   <Star className="w-3.5 h-3.5" />
-                  积分
-                </div>
+                  我的积分
+                </Link>
 
                 {/* Submit button */}
                 <Link href="/submit"

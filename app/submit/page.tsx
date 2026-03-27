@@ -9,7 +9,7 @@ import {
   CheckCircle,
   Plus,
   X,
-  DollarSign,
+  Star,
   Loader2,
 } from "lucide-react";
 import { categories } from "@/lib/data";
@@ -149,7 +149,7 @@ export default function SubmitPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          bounty: form.hasBounty && form.bounty ? Number(form.bounty) : undefined,
+          bountyPoints: form.hasBounty && form.bounty ? Number(form.bounty) : undefined,
           submittedBy: "TechFounder Alex",
         }),
       });
@@ -525,7 +525,7 @@ export default function SubmitPage() {
               </div>
             </div>
 
-            {/* Bounty */}
+            {/* Bounty (积分奖励) */}
             <div className="border border-yellow-200 bg-yellow-50 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3">
                 <button
@@ -542,27 +542,28 @@ export default function SubmitPage() {
                   />
                 </button>
                 <span className="text-sm font-medium text-gray-800 flex items-center gap-1">
-                  <DollarSign className="w-4 h-4 text-yellow-600" />
-                  设置 USD 悬赏
+                  <Star className="w-4 h-4 text-yellow-600" />
+                  设置积分奖励
                 </span>
               </div>
               {form.hasBounty && (
                 <div>
                   <p className="text-xs text-gray-500 mb-2">
-                    悬赏金额会吸引更多 Builder 优先实现你的点子
+                    设置积分奖励会吸引更多 Builder 优先实现你的点子（1000积分 = $1 USD）
                   </p>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                      $
-                    </span>
                     <input
                       type="number"
                       value={form.bounty}
                       onChange={(e) => update("bounty", e.target.value)}
-                      placeholder="100"
-                      min="10"
-                      className="w-full border border-yellow-300 rounded-lg pl-7 pr-4 py-2 text-sm focus:outline-none focus:border-yellow-400 bg-white"
+                      placeholder="1000"
+                      min="1000"
+                      step="100"
+                      className="w-full border border-yellow-300 rounded-lg px-4 pr-16 py-2 text-sm focus:outline-none focus:border-yellow-400 bg-white"
                     />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                      积分
+                    </span>
                   </div>
                 </div>
               )}
@@ -615,7 +616,7 @@ export default function SubmitPage() {
         <ul className="text-xs text-indigo-700 space-y-1">
           <li>• 标题越具体，越能吸引对口的 Builder</li>
           <li>• 说清楚痛点比描述功能更重要</li>
-          <li>• 有悬赏的点子实现速度平均快 3 倍</li>
+          <li>• 有积分奖励的点子实现速度平均快 3 倍</li>
           <li>• 你的点子每获一票，你获得 +2 积分</li>
         </ul>
       </div>

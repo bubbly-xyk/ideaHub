@@ -33,7 +33,8 @@ export default function LeaderboardPage() {
   useEffect(() => {
     fetch("/api/leaderboard")
       .then((r) => r.json())
-      .then((data) => setUsers(data.users ?? []));
+      .then((data) => setUsers(data.users ?? []))
+      .catch(() => setUsers([]));
   }, []);
 
   const getSortedUsers = () => {
@@ -103,8 +104,12 @@ export default function LeaderboardPage() {
                 const heights = ["h-24", "h-32", "h-20"];
                 return (
                   <div key={user.id} className="text-center">
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 font-bold text-lg flex items-center justify-center mx-auto mb-2">
-                      {user.avatar}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center mx-auto mb-2">
+                      {user.avatar?.startsWith("http") ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-indigo-600 font-bold text-lg">{user.name?.slice(0,2).toUpperCase()}</span>
+                      )}
                     </div>
                     <div className="text-xs font-medium text-gray-700 mb-1 truncate">
                       {user.name}
@@ -149,8 +154,12 @@ export default function LeaderboardPage() {
                   </div>
 
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center text-sm flex-shrink-0">
-                    {user.avatar}
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center text-sm flex-shrink-0">
+                    {user.avatar?.startsWith("http") ? (
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-indigo-600 font-bold">{user.name?.slice(0,2).toUpperCase()}</span>
+                    )}
                   </div>
 
                   {/* Name + badges */}

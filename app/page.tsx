@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import {
   ArrowRight, Lightbulb, Zap, Trophy, DollarSign,
@@ -15,12 +17,14 @@ const categoryIcons: Record<string, string> = {
   Social: "🌐", Productivity: "⚡",
 };
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; cls: string }> = {
   open: { label: "开放中", cls: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" },
+  building: { label: "实现中", cls: "bg-blue-50 text-blue-700 ring-1 ring-blue-200" },
   in_progress: { label: "实现中", cls: "bg-blue-50 text-blue-700 ring-1 ring-blue-200" },
   implemented: { label: "已实现", cls: "bg-purple-50 text-purple-700 ring-1 ring-purple-200" },
   validated: { label: "已验证", cls: "bg-amber-50 text-amber-700 ring-1 ring-amber-200" },
 };
+const defaultStatus = { label: "开放中", cls: "bg-gray-100 text-gray-600" };
 
 export default async function HomePage() {
   const allIdeas = await getIdeas();
@@ -216,7 +220,7 @@ export default async function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {hotIdeas.map(idea => {
-              const s = statusConfig[idea.status];
+              const s = statusConfig[idea.status] ?? defaultStatus;
               return (
                 <Link href={`/ideas/${idea.id}`} key={idea.id} className="group block">
                   <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-50 transition-all duration-200 h-full">

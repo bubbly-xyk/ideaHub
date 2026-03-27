@@ -2,24 +2,27 @@ import Link from "next/link";
 import {
   ThumbsUp,
   MessageCircle,
-  DollarSign,
+  Star,
   Clock,
   ChevronRight,
 } from "lucide-react";
 import { Idea } from "@/lib/data";
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; className: string }> = {
   open: { label: "开放中", className: "bg-green-100 text-green-700" },
+  building: { label: "实现中", className: "bg-blue-100 text-blue-700" },
   in_progress: { label: "实现中", className: "bg-blue-100 text-blue-700" },
   implemented: { label: "已实现", className: "bg-purple-100 text-purple-700" },
   validated: { label: "已验证", className: "bg-yellow-100 text-yellow-700" },
 };
+const defaultStatus = { label: "开放中", className: "bg-gray-100 text-gray-600" };
 
-const difficultyConfig = {
+const difficultyConfig: Record<string, { label: string; className: string }> = {
   easy: { label: "简单", className: "bg-emerald-50 text-emerald-600" },
   medium: { label: "中等", className: "bg-orange-50 text-orange-600" },
   hard: { label: "困难", className: "bg-red-50 text-red-600" },
 };
+const defaultDifficulty = { label: "中等", className: "bg-gray-50 text-gray-500" };
 
 interface IdeaCardProps {
   idea: Idea;
@@ -27,8 +30,8 @@ interface IdeaCardProps {
 }
 
 export default function IdeaCard({ idea, compact = false }: IdeaCardProps) {
-  const status = statusConfig[idea.status];
-  const difficulty = difficultyConfig[idea.difficulty];
+  const status = statusConfig[idea.status] ?? defaultStatus;
+  const difficulty = difficultyConfig[idea.difficulty] ?? defaultDifficulty;
 
   return (
     <Link href={`/ideas/${idea.id}`}>
@@ -52,8 +55,8 @@ export default function IdeaCard({ idea, compact = false }: IdeaCardProps) {
               </span>
               {idea.bounty && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />
-                  {idea.bounty} 悬赏
+                  <Star className="w-3 h-3" />
+                  {idea.bounty * 1000} 积分奖励
                 </span>
               )}
             </div>

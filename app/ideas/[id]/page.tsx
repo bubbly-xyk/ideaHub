@@ -4,25 +4,28 @@ import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft, ThumbsUp, MessageCircle, DollarSign, Clock,
+  ArrowLeft, ThumbsUp, MessageCircle, Star, Clock,
   BarChart2, Code, Users, CheckCircle, Send, Share2, Bookmark,
   AlertCircle, Loader2,
 } from "lucide-react";
 import type { Idea, Comment } from "@/lib/data";
 import { useToast } from "@/lib/toast";
 
-const statusConfig = {
-  open: { label: "开放中", className: "bg-emerald-50 text-emerald-700", desc: "这个点子正在等待 Builder 认领" },
-  in_progress: { label: "实现中", className: "bg-blue-50 text-blue-700", desc: "已有 Builder 正在实现这个点子" },
+const statusConfig: Record<string, { label: string; className: string; desc: string }> = {
+  open:        { label: "开放中", className: "bg-emerald-50 text-emerald-700", desc: "这个点子正在等待 Builder 认领" },
+  building:    { label: "实现中", className: "bg-blue-50 text-blue-700",     desc: "已有 Builder 正在实现这个点子" },
+  in_progress: { label: "实现中", className: "bg-blue-50 text-blue-700",     desc: "已有 Builder 正在实现这个点子" },
   implemented: { label: "已实现", className: "bg-purple-50 text-purple-700", desc: "这个点子已经被实现为产品" },
-  validated: { label: "已验证", className: "bg-amber-50 text-amber-700", desc: "这个产品已经经过用户验证" },
+  validated:   { label: "已验证", className: "bg-amber-50 text-amber-700",   desc: "这个产品已经经过用户验证" },
 };
+const defaultStatus = { label: "开放中", className: "bg-gray-50 text-gray-600", desc: "等待认领" };
 
-const difficultyConfig = {
-  easy: { label: "简单", className: "text-emerald-600 bg-emerald-50" },
+const difficultyConfig: Record<string, { label: string; className: string }> = {
+  easy:   { label: "简单", className: "text-emerald-600 bg-emerald-50" },
   medium: { label: "中等", className: "text-orange-600 bg-orange-50" },
-  hard: { label: "困难", className: "text-red-600 bg-red-50" },
+  hard:   { label: "困难", className: "text-red-600 bg-red-50" },
 };
+const defaultDifficulty = { label: "中等", className: "text-gray-600 bg-gray-50" };
 
 export default function IdeaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -39,7 +42,7 @@ export default function IdeaDetailPage({ params }: { params: Promise<{ id: strin
   const [submittingComment, setSubmittingComment] = useState(false);
   const [claimed, setClaimed] = useState(false);
   const [claimedBy, setClaimedBy] = useState("");
-  const [currentStatus, setCurrentStatus] = useState<keyof typeof statusConfig>("open");
+  const [currentStatus, setCurrentStatus] = useState<string>("open");
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
 
@@ -166,8 +169,8 @@ export default function IdeaDetailPage({ params }: { params: Promise<{ id: strin
 
   if (!idea) return null;
 
-  const status = statusConfig[currentStatus];
-  const difficulty = difficultyConfig[idea.difficulty];
+  const status = statusConfig[currentStatus] ?? defaultStatus;
+  const difficulty = difficultyConfig[idea.difficulty] ?? defaultDifficulty;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -187,7 +190,7 @@ export default function IdeaDetailPage({ params }: { params: Promise<{ id: strin
               <span className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">{idea.category}</span>
               {idea.bounty && (
                 <span className="text-xs px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />${idea.bounty} 悬赏
+                  <Star className="w-3 h-3" />{idea.bounty * 1000} 积分奖励
                 </span>
               )}
             </div>
@@ -312,7 +315,7 @@ export default function IdeaDetailPage({ params }: { params: Promise<{ id: strin
             <h3 className="font-semibold text-gray-900 mb-2">你能实现它吗？</h3>
             <p className="text-sm text-gray-500 mb-4">
               认领这个点子并把它变成现实。
-              {idea.bounty && <span className="text-yellow-600 font-medium"> 完成可获得 ${idea.bounty} 悬赏。</span>}
+              {idea.bounty && <span className="text-yellow-600 font-medium"> 完成可额外获得 {idea.bounty * 1000} 积分奖励。</span>}
             </p>
             {!claimed ? (
               <button
@@ -371,8 +374,8 @@ export default function IdeaDetailPage({ params }: { params: Promise<{ id: strin
               </div>
               {idea.bounty && (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">悬赏金额</span>
-                  <span className="font-bold text-yellow-600">${idea.bounty}</span>
+                  <span className="text-gray-600">积分奖励</span>
+                  <span className="font-bold text-yellow-600">+{idea.bounty * 1000}积分</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
@@ -394,7 +397,7 @@ export default function IdeaDetailPage({ params }: { params: Promise<{ id: strin
             </p>
             <div className="bg-indigo-50 rounded-lg p-3 text-sm text-indigo-700 mb-5">
               完成后可获得 <strong>500积分</strong>
-              {idea.bounty && <> + <strong>${idea.bounty} USD 悬赏</strong></>}
+              {idea.bounty && <> + <strong>{idea.bounty * 1000} 额外积分奖励</strong></>}
             </div>
             <div className="flex gap-3">
               <button
